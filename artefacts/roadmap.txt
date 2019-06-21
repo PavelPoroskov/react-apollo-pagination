@@ -1,2 +1,33 @@
+issue
+next page 
+now: empty, new data 
+need: old data, new data
 
 ?useMutation
+
+dataPage, dataAll
+
+fnRefreshFirstPage (and all query result)
+
+?typescript
+
+argument options as in ApolloClient, plus my arguments
+argument client in useEffectPagination(client, ) get from ApolloClient
+
+example with cursor paginations (first, after)
+
+?offset-based pagination (offset, limit), example
+
+documentation
+
+universal usePagination 
+    cursor Relay (first, after), pageinfo
+    cursor (first, after)
+    offset ( offset, limit )
+
+//for offset-pagination, cursor-pagination (not relay cursor-pagination) not use .pageInfo
+
+//end of pagination
+// empty result
+// error
+

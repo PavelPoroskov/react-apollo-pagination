@@ -1,10 +1,10 @@
 import useEffectQuery from './useEffectQuery'
-import useEffectPagination from './useEffectPagination'
+import usePagination from './useEffectPagination'
 import useEffectSubscription from './useEffectSubscription'
 
 
 export {
   useEffectQuery,
   useEffectSubscription,
-  useEffectPagination,
+  usePagination
 }
