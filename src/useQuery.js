@@ -1,10 +1,41 @@
-import {useState, useEffect, useRef} from 'react'
+import {useReducer, useEffect, useRef} from 'react'
 
-const useEffectQuery = ( client, query, variables={}, fnGetData=(data)=>data ) => {
+const initialState = {
+  loading: true,
+  data: null,
+  error: null
+};
 
-  const [data, setData] = useState(undefined)
-  const [error, setError] = useState(undefined)
-  const [loading, setLoading] = useState(undefined)
+function reducer(state, action) {
+  switch (action.type) {
+    case "start": {
+      return {
+        ...state,
+        loading: true
+      };
+    }
+    case "success":
+      return {
+        //...state,
+        loading: false,
+        data: action.payload,
+        error: null
+      };
+    case "error":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    default:
+      throw new Error(
+        `useQuery/reducer(): Unknown action.type ${action.type}`
+      );
+  }
+}
+
+const useQuery = ( client, query, variables={}, fnGetData=(data)=>data ) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const refObservableMain = useRef( undefined );
   const refSubsription = useRef( undefined );
@@ -12,9 +43,9 @@ const useEffectQuery = ( client, query, variables={}, fnGetData=(data)=>data ) =
   async function asyncFunction() {
     try {
 
-      if (!refObservableMain.current) {
-        setLoading(true)
-      }
+      // if (!refObservableMain.current) {
+      //   dispatch({type: 'start'})
+      // }
       refObservableMain.current = client.watchQuery({
         query,
         variables
@@ -38,14 +69,10 @@ const useEffectQuery = ( client, query, variables={}, fnGetData=(data)=>data ) =
             newData = Object.assign( {}, newData )
           }
 
-          setData( newData ) 
-          setError(undefined)
-          setLoading(false)
-
+          dispatch({type:'success', payload : newData})
         },
         err => {
-          setError(err)
-          setLoading(false)
+          dispatch({type:'error', payload : err})
         },
         () => {
           //console.log('watchQuery finished')
@@ -53,9 +80,7 @@ const useEffectQuery = ( client, query, variables={}, fnGetData=(data)=>data ) =
       )
 
     }catch (e) {
-
-      setLoading(false)
-      setError(e)
+      dispatch({type:'error', payload : e})
     }
   }
 
@@ -74,11 +99,10 @@ const useEffectQuery = ( client, query, variables={}, fnGetData=(data)=>data ) =
   }, Object.keys(variables).map( key => variables[key] ) )
 
   return {
-    loading,
-    error,
-    data,
-    //timestamp
+    loading: state.loading,
+    data: state.data,
+    error: state.error
   }
 }
 
-export default useEffectQuery
+export default useQuery

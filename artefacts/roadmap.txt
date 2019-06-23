@@ -3,6 +3,8 @@ next page
 now: empty, new data 
 need: old data, new data
 
+if go to prevPage not use step 'loading'
+
 ?useMutation
 
 dataPage, dataAll

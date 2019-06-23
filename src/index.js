@@ -1,10 +1,10 @@
-import useEffectQuery from './useEffectQuery'
-import usePagination from './useEffectPagination'
-import useEffectSubscription from './useEffectSubscription'
+import useQuery from './useQuery'
+import usePagination from './usePagination'
+import useSubscription from './useSubscription'
 
 
 export {
-  useEffectQuery,
-  useEffectSubscription,
+  useQuery,
+  useSubscription,
   usePagination
 }
