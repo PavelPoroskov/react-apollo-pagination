@@ -1,0 +1,21 @@
+documentation 
+    demo app: ?codesandbox, no--gh-pages
+        .example with cursor paginations-relay (first, after)
+(next1) example with cursor paginations (first, after)
+            not have pageInfo
+(next2) example offset-based pagination (offset, limit)
+
+    app button More: add pages
+
+    how to use, 
+        simple code in README.md
+        arguments
+            pageSize: 10
+            show: 'page'(default) || 'all'
+        show sort
+        show filter
+    code with table (reactstrap)
+
+    what required
+        @connection(key: "uniquename1")
+        after, first

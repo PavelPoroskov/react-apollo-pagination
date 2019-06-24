@@ -1,0 +1,39 @@
+
+argument options as in ApolloClient, plus my arguments
+
+
+universal usePagination 
+https://www.apollographql.com/docs/react/features/pagination/
+    cursor Relay (first, after), pageinfo
+    cursor (first, after)
+    offset ( offset, limit )
+
+    //for offset-pagination, cursor-pagination (not relay cursor-pagination) not use .pageInfo
+    //end of pagination
+        // empty result
+        // error
+
+        .example with cursor paginations-relay (first, after)
+(next1) example with cursor paginations (first, after)
+            not have pageInfo
+(next2) example offset-based pagination (offset, limit)
+
+
+
+dataPage, dataAll
+
+
+fnRefreshFirstPage/reFetch (and all query result)
+
+
+if go to prevPage not use step 'loading'
+
+
+?typescript
+    show tips for arguments, 
+    autocomplete in vscode
+
+argument client in usePagination(client, ) get from ApolloClient
+    or from root component as in @apollo/hooks
+
+?useMutation
