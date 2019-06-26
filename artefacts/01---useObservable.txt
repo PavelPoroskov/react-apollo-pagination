@@ -1,0 +1,16 @@
+for clean code 
+use https://github.com/streamich/react-use/blob/master/docs/useObservable.md
+    https://github.com/streamich/react-use/blob/master/src/useObservable.ts
+client.watchQuery({
+          query,
+          variables,
+          fetchPolicy: "network-only"
+        });
+https://www.apollographql.com/docs/react/api/apollo-client/#ApolloClient.watchQuery
+https://www.apollographql.com/docs/react/api/apollo-client/#observablequery
+    variables
+    result(): Promise
+    getCurrentResult()
+    refetch(variables)
+
+https://github.com/zenparsing/zen-observable

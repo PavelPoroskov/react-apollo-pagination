@@ -33,11 +33,13 @@ const getPageFetcher = (_client, _query, cbSuccess) => {
     // console.log(cbSuccess);
     const strVaribles = varibles2String(variables);
     const isQueryCached = strVaribles in setCached;
-    setCached[strVaribles] = true;
+    // console.log(strVaribles)
+    // console.log(`isQueryCached ${isQueryCached}`)
 
     if (!mainObservable) {
-
       try {
+        // //test error throw
+        // throw new Error('Test error 42')
         mainObservable = client.watchQuery({
           query,
           variables,
@@ -48,10 +50,13 @@ const getPageFetcher = (_client, _query, cbSuccess) => {
         //  1) localhost:3000/, pageNext
         //  2) to localhost:3000/search
         //  3) to localhost:3000/, must fetch fresh data
-    
+
         // console.log('watchQuery subscribe')
+        setCached[strVaribles] = true;
         mainSubscription = mainObservable.subscribe(
           resultNext => {
+            console.log('resultNext')
+            console.log(resultNext)
             let data = fnGetArray(resultNext.data);
             let pageInfo = fnGetPageInfo(resultNext.data);
             cbSuccess(data, pageInfo);
@@ -63,32 +68,37 @@ const getPageFetcher = (_client, _query, cbSuccess) => {
             //console.log('watchQuery finished')
           }
         );
-        return mainSubscription
+        return mainSubscription;
       } catch (e) {
         throw e;
       }
-
-    }else{
-
+    } else {
       try {
         let prevData = client.readQuery({ query });
-  
+
         let options = { query, variables };
         if (!isQueryCached) {
           //          options['fetchPolicy'] = 'network-only'
           options["fetchPolicy"] = "no-cache";
         } else {
-          //return;
-          //cbSuccess(fnGetArray(prevData), fnGetPageInfo(prevData));
+          cbSuccess(fnGetArray(prevData), fnGetPageInfo(prevData));
+          return;
         }
-  
-        //write data to apollo cache
+
+        // //test error
+        // throw new Error('Test error 86')
+
         const result = await client.query(options);
-  
+        setCached[strVaribles] = true;
+
         if (result.networkStatus === 7) {
           const currData = result.data;
-  
-          fnSetEdges(currData, fnGetEdges(prevData).concat(fnGetEdges(currData)));
+
+          //write data to apollo cache
+          fnSetEdges(
+            currData,
+            fnGetEdges(prevData).concat(fnGetEdges(currData))
+          );
           client.writeQuery({
             query,
             data: currData
@@ -98,7 +108,7 @@ const getPageFetcher = (_client, _query, cbSuccess) => {
         throw er;
       }
     }
-  }
+  };
 };
 
 export default getPageFetcher;

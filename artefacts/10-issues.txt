@@ -1,3 +1,7 @@
+issue: intersept error from getPageFetcher.js(observable) in usePagination.js(try { await refFetchPage }catch (e) { ...} ) 
+    why interception occurs?
+
+    miracle
 
 issue: not exist
 next page 

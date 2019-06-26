@@ -11,6 +11,7 @@ https://www.apollographql.com/docs/react/features/pagination/
     //for offset-pagination, cursor-pagination (not relay cursor-pagination) not use .pageInfo
     //end of pagination
         // empty result
+            .if next page fetch empty array, dont go next page
         // error
 
         .example with cursor paginations-relay (first, after)
@@ -37,3 +38,4 @@ argument client in usePagination(client, ) get from ApolloClient
     or from root component as in @apollo/hooks
 
 ?useMutation
+
