@@ -1,3 +1,15 @@
+
+
+useObservable cause render becouse use useState
+I need call cbSuccess( dispatch({type: 'success})) after success 
+to set pageNum?
+  not useObservable
+  use code from useObservable
+    https://github.com/streamich/react-use/blob/master/src/useObservable.ts
+
+BUT
+custom hook useObservable inside custom hook usePagination is not good. By my opinion
+
 for clean code 
 use https://github.com/streamich/react-use/blob/master/docs/useObservable.md
     https://github.com/streamich/react-use/blob/master/src/useObservable.ts
