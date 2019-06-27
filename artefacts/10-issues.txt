@@ -1,3 +1,13 @@
+
+
+issue:
+old realisation (artefacts/old/usePaginationBefore.js) 
+faster than new realisation src/usePagination.js
+    time for loading first page
+need test
+
+closed: new realisation use useEffect( ()=> { s = observable.subsribe(fn); return s.unsubscribe()})
+    Here not have this issue
 issue: intersept error from getPageFetcher.js(observable) in usePagination.js(try { await refFetchPage }catch (e) { ...} ) 
     why interception occurs?
 

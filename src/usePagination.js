@@ -1,4 +1,4 @@
-import { useReducer, useRef, useEffect, useMemo, useCallback } from "react";
+import { useReducer, useRef, useEffect, useMemo } from "react";
 
 import getQueryPaths from "./getQueryPaths";
 
@@ -38,8 +38,10 @@ function reducer(state, action) {
       // todo:
       //   get cursor of last item on the page
 
-      console.log(`reducer setPageNext ${intentionPageNum}`);
-
+      if (process.env.NODE_ENV==='development') {
+        console.log(`reducer setPageNext ${intentionPageNum}`);
+      }  
+    
       if (intentionPageNum <= state.arPageNums.length) {
 
         const pageNum = intentionPageNum;
@@ -74,7 +76,10 @@ function reducer(state, action) {
       //const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
       const pageSize = state.pageSize
 
-      console.log(`reducer setPagePrev ${intentionPageNum}`);
+      if (process.env.NODE_ENV==='development') {
+        console.log(`reducer setPagePrev ${intentionPageNum}`);
+      }  
+
       // return {
       //   ...state,
       //   intentionPageNum,
@@ -101,7 +106,10 @@ function reducer(state, action) {
     case "setPage": {
       const intentionPageNum = action.payload;
       const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
-      console.log(`reducer setPagePrev ${intentionPageNum}`);
+      if (process.env.NODE_ENV==='development') {
+        console.log(`reducer setPagePrev ${intentionPageNum}`);
+      }  
+
       return {
         ...state,
         intentionPageNum,
@@ -123,8 +131,8 @@ function reducer(state, action) {
         state.arPageNums.length < pageNum
           ? state.arCursorAfter.concat([state.intensionCursorAfter])
           : state.arCursorAfter;
-      // console.log('data')
-      // console.log(data)
+      // console_log('data')
+      // console_log(data)
       const dataPage = data.slice((pageNum - 1) * pageSize, pageNum * pageSize);
 
       //let hasNextPage = (pageNum === arPageNums.length && pageInfo.hasNextPage) || pageNum < arPageNums.length
@@ -161,7 +169,10 @@ function reducer(state, action) {
         lastPageNum
       };
     case "error":
-      console.log("reducer: error");
+      if (process.env.NODE_ENV==='development') {
+        console.log("reducer: error");
+      }  
+
       return {
         ...state,
         error: action.payload,
@@ -182,57 +193,55 @@ function reducer(state, action) {
 
 const usePagination = (client, query, variables = {}, pageSize) => {
   const refCached = useRef({});
-  const [state, dispatch] = useReducer(reducer, pageSize, initState );
-  const { fnGetEdges, fnSetEdges, fnGetArray, fnGetPageInfo } = useMemo(
+  const [state, dispatch] = useReducer(reducer, initState(pageSize) );
+
+  const { fnJoinResults, fnGetArray, fnGetPageInfo } = useMemo(
     () => getQueryPaths(query),
     [query]
   );
 
+  const memoVariables = useMemo(
+    () => variables,
+    // eslint-disable-next-line
+    [Object.keys(variables).map(key => variables[key])]
+  );
   const observableQuery = useMemo(() => {
     const _observable = client.watchQuery({
       query,
       variables: {
-        ...variables,
+        ...memoVariables,
         after: null,
         first: pageSize
       },
       fetchPolicy: "network-only"
     });
-    refCached.current["null"] = true;
+    refCached.current = { "null": true };
 
     return _observable;
-    // eslint-disable-next-line
-  }, [client, query, pageSize].concat(Object.keys(variables).map(key => variables[key])));
-
-  const fnSuccess = useCallback(
-    data => {
-      dispatch({
-        type: "success",
-        payload: {
-          data: fnGetArray(data),
-          pageInfo: fnGetPageInfo(data)
-        }
-      });
-    },
-    [fnGetArray, fnGetPageInfo]
-  );
+  }, [client, query, memoVariables, pageSize] );
 
   useEffect(() => {
     const s = observableQuery.subscribe(result => {
-      // console.log("cbSuccess");
-      // console.log(result.data);
-      fnSuccess(result.data);
+      dispatch({
+        type: "success",
+        payload: {
+          data: fnGetArray(result.data),
+          pageInfo: fnGetPageInfo(result.data)
+        }
+      });
     },
     err => {
       dispatch({ type: "error", payload: err });
     } );
     return () => s.unsubscribe();
-  }, [observableQuery, fnSuccess]);
+  }, [observableQuery, fnGetArray, fnGetPageInfo]);
 
   useEffect(() => {
     async function asyncFunctionInEffect() {
-      //console.log("useEffect");
-      if (!state.pageNum) {
+      //1) not need for first page
+      //2) return to first page will be processed in reducer
+      //if (!state.pageNum) {
+      if (!state.intensionCursorAfter) {          
         return
       }
       try {
@@ -240,14 +249,13 @@ const usePagination = (client, query, variables = {}, pageSize) => {
         let options = {
           query,
           variables: {
-            ...variables,
-            //orderBy: 'createdAt_DESC', //
+            ...memoVariables,
             first: pageSize,
             after: state.intensionCursorAfter
           }
         };
-        // console.log('refCached.current')
-        // console.log(refCached.current)
+        // console_log('refCached.current')
+        // console_log(refCached.current)
         const isQueryCached = state.intensionCursorAfter
           ? state.intensionCursorAfter in refCached.current
           : "null" in refCached.current;
@@ -255,7 +263,8 @@ const usePagination = (client, query, variables = {}, pageSize) => {
           //          options['fetchPolicy'] = 'network-only'
           options["fetchPolicy"] = "no-cache";
         } else {
-          fnSuccess(prevData);
+          // it will be processed in reduce
+          //fnSuccessChangePage(prevData);
           return;
         }
 
@@ -266,7 +275,7 @@ const usePagination = (client, query, variables = {}, pageSize) => {
         refCached.current[strVaribles] = true;
 
         const currData = result.data;
-        fnSetEdges(currData, fnGetEdges(prevData).concat(fnGetEdges(currData)));
+        fnJoinResults(currData, prevData);
         client.writeQuery({
           query,
           data: currData
@@ -278,8 +287,7 @@ const usePagination = (client, query, variables = {}, pageSize) => {
 
     asyncFunctionInEffect();
     // }, [state.intensionCursorAfter, pageSize, variables]);
-    // eslint-disable-next-line
-  }, [state.intensionCursorAfter, state.timestamp, pageSize].concat(Object.keys(variables).map(key => variables[key])));
+  }, [client, query, memoVariables, pageSize, fnJoinResults, state.intensionCursorAfter, state.timestamp ] );
 
   const goNextPage = () => {
     if (state.loading) {

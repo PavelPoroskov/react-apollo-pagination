@@ -104,10 +104,12 @@ const getQueryPaths = query => {
 
   //   return fnGetEdges(data).map(o => fnGetItem(o))
   // }
+  const fnJoinResults = (currData, prevData) => fnSetEdges(currData, fnGetEdges(prevData).concat(fnGetEdges(currData)))
 
   return {
-    fnGetEdges,
-    fnSetEdges,
+    //fnGetEdges,
+    //fnSetEdges,
+    fnJoinResults,
     //fnGetItem,
     fnGetArray,
     fnGetPageInfo
