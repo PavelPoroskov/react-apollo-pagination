@@ -27,7 +27,7 @@ dataPage, dataAll
 fnRefreshFirstPage/reFetch (and all query result)
 
 
-if go to prevPage not use step 'loading'
+.if go to prevPage not use step 'loading'
 
 
 ?typescript

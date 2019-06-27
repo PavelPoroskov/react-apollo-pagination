@@ -2,24 +2,29 @@ import { useReducer, useRef, useEffect, useMemo, useCallback } from "react";
 
 import getQueryPaths from "./getQueryPaths";
 
-const initialState = {
-  intentionPageNum: 1,
-  intensionCursorAfter: null,
-  timestamp: 0,
+function initState(_pageSize) {
+  return {
+    pageSize: _pageSize,
 
-  loading: true,
-  error: null,
-  // loadingFirst: true
-
-  pageNum: null,
-  hasPrevPage: null,
-  hasNextPage: null,
-  arPageNums: [],
-  arCursorAfter: [],
-  data: null,
-  pageInfo: null,
-  lastPageNum: null
-};
+    intentionPageNum: 1,
+    intensionCursorAfter: null,
+    timestamp: 0,
+  
+    loading: true,
+    error: null,
+    // loadingFirst: true
+  
+    pageNum: null,
+    hasPrevPage: null,
+    hasNextPage: null,
+    arPageNums: [],
+    arCursorAfter: [],
+    data: null, //dataPage
+    dataAll: null,
+    pageInfo: null,
+    lastPageNum: null,
+  }
+}
 
 function reducer(state, action) {
   switch (action.type) {
@@ -29,10 +34,31 @@ function reducer(state, action) {
         state.pageNum === state.arPageNums.length
           ? state.pageInfo.endCursor
           : state.arCursorAfter[intentionPageNum - 1];
+      const pageSize = state.pageSize
       // todo:
       //   get cursor of last item on the page
 
       console.log(`reducer setPageNext ${intentionPageNum}`);
+
+      if (intentionPageNum <= state.arPageNums.length) {
+
+        const pageNum = intentionPageNum;
+        const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+
+        let hasNextPage = true;
+        if (state.lastPageNum) {
+          hasNextPage = pageNum < state.lastPageNum;
+        }
+
+        return {
+          ...state,
+          pageNum,
+          hasNextPage,
+          hasPrevPage: 1 < pageNum,
+          data: dataPage
+        };
+      }
+
       return {
         ...state,
         intentionPageNum,
@@ -45,14 +71,31 @@ function reducer(state, action) {
     }
     case "setPagePrev": {
       const intentionPageNum = state.pageNum - 1;
-      const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
+      //const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
+      const pageSize = state.pageSize
+
       console.log(`reducer setPagePrev ${intentionPageNum}`);
+      // return {
+      //   ...state,
+      //   intentionPageNum,
+      //   intensionCursorAfter,
+      //   loading: true,
+      //   error: null
+      // };
+      const pageNum = intentionPageNum;
+      const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+
+      let hasNextPage = true;
+      if (state.lastPageNum) {
+        hasNextPage = pageNum < state.lastPageNum;
+      }
+
       return {
         ...state,
-        intentionPageNum,
-        intensionCursorAfter,
-        loading: true,
-        error: null
+        pageNum,
+        hasPrevPage: 1 < pageNum,
+        hasNextPage,
+        data: dataPage
       };
     }
     case "setPage": {
@@ -68,7 +111,8 @@ function reducer(state, action) {
       };
     }
     case "success":
-      const { data, pageInfo, pageSize } = action.payload;
+      const { data, pageInfo } = action.payload;
+      const pageSize = state.pageSize
       //if intentional page is empty, dont go to intensional page
       const pageNum = state.intentionPageNum;
       const arPageNums =
@@ -112,6 +156,7 @@ function reducer(state, action) {
         hasPrevPage: 1 < pageNum,
         hasNextPage,
         data: dataPage,
+        dataAll: data,
         pageInfo,
         lastPageNum
       };
@@ -137,7 +182,7 @@ function reducer(state, action) {
 
 const usePagination = (client, query, variables = {}, pageSize) => {
   const refCached = useRef({});
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, pageSize, initState );
   const { fnGetEdges, fnSetEdges, fnGetArray, fnGetPageInfo } = useMemo(
     () => getQueryPaths(query),
     [query]
@@ -165,12 +210,11 @@ const usePagination = (client, query, variables = {}, pageSize) => {
         type: "success",
         payload: {
           data: fnGetArray(data),
-          pageInfo: fnGetPageInfo(data),
-          pageSize
+          pageInfo: fnGetPageInfo(data)
         }
       });
     },
-    [fnGetArray, fnGetPageInfo, pageSize]
+    [fnGetArray, fnGetPageInfo]
   );
 
   useEffect(() => {
