@@ -1,6 +1,10 @@
-import { useReducer, useRef, useEffect, useMemo, useCallback } from "react";
+import {
+  useReducer,
+  useRef,
+  useEffect //,useMemo
+} from "react";
 
-import getQueryPaths from "./getQueryPaths";
+import getPageFetcher from "./getPageFetcher";
 
 const initialState = {
   intentionPageNum: 1,
@@ -120,7 +124,7 @@ function reducer(state, action) {
       return {
         ...state,
         error: action.payload,
-        loading: false
+        loading: false,
         // bad option: becouse
         // intensionCursorAfter: (state.pageNum && state.arCursorAfter[state.pageNum]) || null
 
@@ -135,104 +139,55 @@ function reducer(state, action) {
   }
 }
 
-const usePagination = (client, query, variables = {}, pageSize) => {
-  const refCached = useRef({});
+const usePagination = (client, query, variables = {}, _pageSize) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { fnGetEdges, fnSetEdges, fnGetArray, fnGetPageInfo } = useMemo(
-    () => getQueryPaths(query),
-    [query]
-  );
 
-  const observableQuery = useMemo(() => {
-    const _observable = client.watchQuery({
-      query,
-      variables: {
-        ...variables,
-        after: null,
-        first: pageSize
-      },
-      fetchPolicy: "network-only"
-    });
-    refCached.current["null"] = true;
-
-    return _observable;
-    // eslint-disable-next-line
-  }, [client, query, pageSize].concat(Object.keys(variables).map(key => variables[key])));
-
-  const fnSuccess = useCallback(
-    data => {
+  const refFetchPage = useRef(
+    getPageFetcher(client, query, (data, pageInfo) => {
+      console.log("cbSuccess");
       dispatch({
         type: "success",
         payload: {
-          data: fnGetArray(data),
-          pageInfo: fnGetPageInfo(data),
-          pageSize
+          data,
+          pageInfo,
+          pageSize: _pageSize
         }
       });
-    },
-    [fnGetArray, fnGetPageInfo, pageSize]
+    })
   );
-
-  useEffect(() => {
-    const s = observableQuery.subscribe(result => {
-      // console.log("cbSuccess");
-      // console.log(result.data);
-      fnSuccess(result.data);
-    });
-    return () => s.unsubscribe();
-  }, [observableQuery, fnSuccess]);
+  const refMainSubscription = useRef(null);
 
   useEffect(() => {
     async function asyncFunctionInEffect() {
-      //console.log("useEffect");
-      if (!state.pageNum) {
-        return
-      }
+      console.log("useEffect");
       try {
-        let prevData = client.readQuery({ query });
-        let options = {
-          query,
-          variables: {
-            ...variables,
-            //orderBy: 'createdAt_DESC', //
-            first: pageSize,
-            after: state.intensionCursorAfter
-          }
+        let queryVariables = {
+          ...variables,
+          //orderBy: 'createdAt_DESC', //
+          first: _pageSize,
+          after: state.intensionCursorAfter
         };
-        // console.log('refCached.current')
-        // console.log(refCached.current)
-        const isQueryCached = state.intensionCursorAfter
-          ? state.intensionCursorAfter in refCached.current
-          : "null" in refCached.current;
-        if (!isQueryCached) {
-          //          options['fetchPolicy'] = 'network-only'
-          options["fetchPolicy"] = "no-cache";
-        } else {
-          fnSuccess(prevData);
-          return;
+        const mainSubscription = await refFetchPage.current(queryVariables);
+        if (!refMainSubscription.current) {
+          refMainSubscription.current = mainSubscription;
         }
-
-        const result = await client.query(options);
-        const strVaribles = state.intensionCursorAfter
-          ? state.intensionCursorAfter
-          : "null";
-        refCached.current[strVaribles] = true;
-
-        const currData = result.data;
-        fnSetEdges(currData, fnGetEdges(prevData).concat(fnGetEdges(currData)));
-        client.writeQuery({
-          query,
-          data: currData
-        });
       } catch (errFetchPage) {
         dispatch({ type: "error", payload: errFetchPage });
       }
     }
 
     asyncFunctionInEffect();
-    // }, [state.intensionCursorAfter, pageSize, variables]);
+    // }, [state.intensionCursorAfter, _pageSize, variables]);
     // eslint-disable-next-line
-  }, [state.intensionCursorAfter, state.timestamp, pageSize].concat(Object.keys(variables).map(key => variables[key])));
+  }, [state.intensionCursorAfter, state.timestamp, _pageSize].concat(Object.keys(variables).map(key => variables[key])));
+
+  useEffect(() => {
+    return () => {
+      if (refMainSubscription.current) {
+        refMainSubscription.current.unsubscribe();
+      }
+    };
+  }, []);
 
   const goNextPage = () => {
     if (state.loading) {
