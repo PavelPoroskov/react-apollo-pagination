@@ -222,7 +222,10 @@ const usePagination = (client, query, variables = {}, pageSize) => {
       // console.log("cbSuccess");
       // console.log(result.data);
       fnSuccess(result.data);
-    });
+    },
+    err => {
+      dispatch({ type: "error", payload: err });
+    } );
     return () => s.unsubscribe();
   }, [observableQuery, fnSuccess]);
 
