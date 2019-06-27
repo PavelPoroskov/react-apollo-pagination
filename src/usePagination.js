@@ -20,7 +20,7 @@ function initState(_pageSize) {
     arPageNums: [],
     arCursorAfter: [],
     data: null, //dataPage
-    dataAll: null,
+    // dataAll: null,
     pageInfo: null,
     lastPageNum: null,
   }
@@ -34,7 +34,6 @@ function reducer(state, action) {
         state.pageNum === state.arPageNums.length
           ? state.pageInfo.endCursor
           : state.arCursorAfter[intentionPageNum - 1];
-      const pageSize = state.pageSize
       // todo:
       //   get cursor of last item on the page
 
@@ -42,30 +41,32 @@ function reducer(state, action) {
         console.log(`reducer setPageNext ${intentionPageNum}`);
       }  
     
-      if (intentionPageNum <= state.arPageNums.length) {
+      // if (intentionPageNum <= state.arPageNums.length) {
 
-        const pageNum = intentionPageNum;
-        const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+      //   const pageNum = intentionPageNum;
+        // const pageSize = state.pageSize
+      //   const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
 
-        let hasNextPage = true;
-        if (state.lastPageNum) {
-          hasNextPage = pageNum < state.lastPageNum;
-        }
+      //   let hasNextPage = true;
+      //   if (state.lastPageNum) {
+      //     hasNextPage = pageNum < state.lastPageNum;
+      //   }
 
-        return {
-          ...state,
-          pageNum,
-          hasNextPage,
-          hasPrevPage: 1 < pageNum,
-          data: dataPage
-        };
-      }
+      //   return {
+      //     ...state,
+      //     pageNum,
+      //     hasNextPage,
+      //     hasPrevPage: 1 < pageNum,
+      //     data: dataPage
+      //   };
+      // }
 
       return {
         ...state,
         intentionPageNum,
         intensionCursorAfter,
-        loading: true,
+        // loading: true,
+        loading: state.arPageNums.length < intentionPageNum,
         error: null,
         //to repeat after Error
         timestamp: Date.now()
@@ -73,35 +74,36 @@ function reducer(state, action) {
     }
     case "setPagePrev": {
       const intentionPageNum = state.pageNum - 1;
-      //const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
-      const pageSize = state.pageSize
+      const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
 
       if (process.env.NODE_ENV==='development') {
         console.log(`reducer setPagePrev ${intentionPageNum}`);
       }  
 
-      // return {
-      //   ...state,
-      //   intentionPageNum,
-      //   intensionCursorAfter,
-      //   loading: true,
-      //   error: null
-      // };
-      const pageNum = intentionPageNum;
-      const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
-
-      let hasNextPage = true;
-      if (state.lastPageNum) {
-        hasNextPage = pageNum < state.lastPageNum;
-      }
-
       return {
         ...state,
-        pageNum,
-        hasPrevPage: 1 < pageNum,
-        hasNextPage,
-        data: dataPage
+        intentionPageNum,
+        intensionCursorAfter,
+        // loading: true,
+        loading: false,
+        error: null
       };
+      // const pageNum = intentionPageNum;
+      // const pageSize = state.pageSize
+      // const dataPage = state.dataAll.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+
+      // let hasNextPage = true;
+      // if (state.lastPageNum) {
+      //   hasNextPage = pageNum < state.lastPageNum;
+      // }
+
+      // return {
+      //   ...state,
+      //   pageNum,
+      //   hasPrevPage: 1 < pageNum,
+      //   hasNextPage,
+      //   data: dataPage
+      // };
     }
     case "setPage": {
       const intentionPageNum = action.payload;
@@ -114,7 +116,8 @@ function reducer(state, action) {
         ...state,
         intentionPageNum,
         intensionCursorAfter,
-        loading: true,
+        // loading: true,
+        loading: false,
         error: null
       };
     }
@@ -164,7 +167,7 @@ function reducer(state, action) {
         hasPrevPage: 1 < pageNum,
         hasNextPage,
         data: dataPage,
-        dataAll: data,
+        // dataAll: data,
         pageInfo,
         lastPageNum
       };
@@ -191,7 +194,7 @@ function reducer(state, action) {
   }
 }
 
-const usePagination = (client, query, variables = {}, pageSize) => {
+function usePagination (client, query, variables = {}, pageSize) {
   const refCached = useRef({});
   const [state, dispatch] = useReducer(reducer, initState(pageSize) );
 
@@ -239,34 +242,42 @@ const usePagination = (client, query, variables = {}, pageSize) => {
   useEffect(() => {
     async function asyncFunctionInEffect() {
       //1) not need for first page
-      //2) return to first page will be processed in reducer
-      //if (!state.pageNum) {
-      if (!state.intensionCursorAfter) {          
+      // if (!state.pageNum) {
+      if (!state.timestamp) {
+      //-2) return to first page will be processed in reducer
+      // if (!state.intensionCursorAfter) {          
         return
       }
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log("asyncFunctionInEffect");
+      // }  
       try {
         let prevData = client.readQuery({ query });
+        const isQueryCached = state.intensionCursorAfter
+          ? state.intensionCursorAfter in refCached.current
+          : "null" in refCached.current;
+        if (isQueryCached) {
+          //- it will be processed in reduce
+          dispatch({
+            type: "success",
+            payload: {
+              data: fnGetArray(prevData),
+              pageInfo: fnGetPageInfo(prevData)
+            }
+          });
+          return;
+        }
+  
         let options = {
           query,
           variables: {
             ...memoVariables,
             first: pageSize,
             after: state.intensionCursorAfter
-          }
+          },
+          // fetchPolicy: 'network-only',
+          fetchPolicy: 'no-cache'
         };
-        // console_log('refCached.current')
-        // console_log(refCached.current)
-        const isQueryCached = state.intensionCursorAfter
-          ? state.intensionCursorAfter in refCached.current
-          : "null" in refCached.current;
-        if (!isQueryCached) {
-          //          options['fetchPolicy'] = 'network-only'
-          options["fetchPolicy"] = "no-cache";
-        } else {
-          // it will be processed in reduce
-          //fnSuccessChangePage(prevData);
-          return;
-        }
 
         const result = await client.query(options);
         const strVaribles = state.intensionCursorAfter
@@ -287,7 +298,7 @@ const usePagination = (client, query, variables = {}, pageSize) => {
 
     asyncFunctionInEffect();
     // }, [state.intensionCursorAfter, pageSize, variables]);
-  }, [client, query, memoVariables, pageSize, fnJoinResults, state.intensionCursorAfter, state.timestamp ] );
+  }, [client, query, memoVariables, pageSize, fnGetArray, fnGetPageInfo, fnJoinResults, state.intensionCursorAfter, state.timestamp ] );
 
   const goNextPage = () => {
     if (state.loading) {

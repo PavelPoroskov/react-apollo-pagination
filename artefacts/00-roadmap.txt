@@ -1,7 +1,6 @@
 
 argument options as in ApolloClient, plus my arguments
 
-
 universal usePagination 
 https://www.apollographql.com/docs/react/features/pagination/
     cursor Relay (first, after), pageinfo
@@ -20,15 +19,9 @@ https://www.apollographql.com/docs/react/features/pagination/
 (next2) example offset-based pagination (offset, limit)
 
 
-
 dataPage, dataAll
 
-
 fnRefreshFirstPage/reFetch (and all query result)
-
-
-.if go to prevPage not use step 'loading'
-
 
 ?typescript
     show tips for arguments, 
@@ -45,3 +38,13 @@ pageSize can be change without refetch: it is convenience for paageSize autofits
 better solution
     only customized pageSize
     change pageSize without refetch
+
+(
+if go to prevPage not use step 'loading'
+    process in reducer
+        use state.dataAll
+
+.optimize usePagination
+    state.dataAll
+    apollo-client cache contain this data
+)
