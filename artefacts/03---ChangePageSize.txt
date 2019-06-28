@@ -1,0 +1,8 @@
+change pageSize without refetch
+
+fetchPageSize (internal) and pageSize (customized) for render,
+pageSize can be change without refetch: it is convenience for paageSize autofits screen size 
+    change fetchPageSize without refetch
+better solution
+    only customized pageSize
+    change pageSize without refetch

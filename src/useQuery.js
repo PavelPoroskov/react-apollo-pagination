@@ -1,4 +1,5 @@
-import {useReducer, useEffect, useRef} from 'react'
+import {useReducer, useMemo, useEffect} from 'react'
+import {options2arr} from './utils'
 
 const initialState = {
   loading: true,
@@ -34,69 +35,61 @@ function reducer(state, action) {
   }
 }
 
-const useQuery = ( client, query, variables={}, fnGetData=(data)=>data ) => {
+// options = { query, variables }
+const useQuery = ( client, options, fnGetData=(data)=>data ) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const refObservableMain = useRef( undefined );
-  const refSubsription = useRef( undefined );
-
-  async function asyncFunction() {
+  const memoOptions = useMemo(
+    () => {
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log('useMemo memoRestOptions')
+      // }      
+      const {variables, ...restOptions} = options
+      return {variables: variables || {}, ...restOptions }
+    },
+    // eslint-disable-next-line
+    options2arr(options)
+  );
+  const observableQuery = useMemo(() => {
+    let _observable
     try {
+      _observable = client.watchQuery({
+        ...memoOptions,
+        fetchPolicy: "network-only"
+      });
+    }catch (errWatch) {
+      dispatch({ type: "error", payload: errWatch });
+    }
 
-      // if (!refObservableMain.current) {
-      //   dispatch({type: 'start'})
-      // }
-      refObservableMain.current = client.watchQuery({
-        query,
-        variables
-      })
+    return _observable;
+  }, [client, memoOptions] );
 
-      refSubsription.current = refObservableMain.current.subscribe(
-        resultNext => {
-          // if (resultNext.networkStatus !==7) {
-          //   return
-          // }
-
-          let newData = resultNext.data
-          if (fnGetData) {
-            newData = fnGetData(resultNext.data)
-          }
-          if (Array.isArray(newData)) {
-            //newData = [ ...newData ]
-            newData = newData.slice( )
-          }else if ((!!newData) && (newData.constructor === Object)) {
-            //newData = { ...newData0 }
-            newData = Object.assign( {}, newData )
-          }
-
-          dispatch({type:'success', payload : newData})
-        },
-        err => {
-          dispatch({type:'error', payload : err})
-        },
-        () => {
-          //console.log('watchQuery finished')
+  useEffect(() => {
+    if (!observableQuery) {
+      return
+    }
+    const s = observableQuery.subscribe(
+      resultNext => {
+        let newData = resultNext.data
+        if (fnGetData) {
+          newData = fnGetData(resultNext.data)
         }
-      )
+        if (Array.isArray(newData)) {
+          //newData = [ ...newData ]
+          newData = newData.slice( )
+        }else if ((!!newData) && (newData.constructor === Object)) {
+          //newData = { ...newData0 }
+          newData = Object.assign( {}, newData )
+        }
 
-    }catch (e) {
-      dispatch({type:'error', payload : e})
-    }
-  }
-
-  useEffect( () => {
-
-    // console.log('react-apollo-hooks.js / useEffect')
-    asyncFunction()
-
-    return () => {
-      // console.log('watchQuery unsubscribe')
-      if (refSubsription.current) {
-        refSubsription.current.unsubscribe()
-      }
-    }
-  // eslint-disable-next-line 
-  }, Object.keys(variables).map( key => variables[key] ) )
+        dispatch({type:'success', payload : newData})
+      },
+      err => {
+        dispatch({type:'error', payload : err})
+      },
+    );
+    return () => s.unsubscribe();
+  }, [observableQuery, fnGetData]);
 
   return {
     loading: state.loading,

@@ -1,6 +1,7 @@
-import { useReducer, useRef, useEffect, useMemo } from "react";
+import { useReducer, useRef, useEffect, useMemo } from 'react';
 
-import getQueryPaths from "./getQueryPaths";
+import getQueryPaths from './getQueryPaths';
+import {options2arr} from './utils'
 
 function initState(_pageSize) {
   return {
@@ -194,36 +195,51 @@ function reducer(state, action) {
   }
 }
 
-function usePagination (client, query, variables = {}, pageSize) {
+
+function usePagination (client, options, pageSize) {
   const refCached = useRef({});
   const [state, dispatch] = useReducer(reducer, initState(pageSize) );
 
+  const memoOptions = useMemo(
+    () => {
+      if (process.env.NODE_ENV==='development') {
+        console.log('useMemo memoRestOptions')
+      }      
+      const {variables, ...restOptions} = options
+      return {variables: variables || {}, ...restOptions }
+    },
+    // eslint-disable-next-line
+    options2arr(options)
+  );
   const { fnJoinResults, fnGetArray, fnGetPageInfo } = useMemo(
-    () => getQueryPaths(query),
-    [query]
+    () => getQueryPaths(memoOptions.query),
+    [memoOptions.query]
   );
 
-  const memoVariables = useMemo(
-    () => variables,
-    // eslint-disable-next-line
-    [Object.keys(variables).map(key => variables[key])]
-  );
   const observableQuery = useMemo(() => {
-    const _observable = client.watchQuery({
-      query,
-      variables: {
-        ...memoVariables,
-        after: null,
-        first: pageSize
-      },
-      fetchPolicy: "network-only"
-    });
-    refCached.current = { "null": true };
+    let _observable
+    try {
+      _observable = client.watchQuery({
+        ...memoOptions,
+        variables: {
+          ...memoOptions.variables,
+          after: null,
+          first: pageSize
+        },
+        fetchPolicy: "network-only"
+      });
+      refCached.current = { "null": true };
+    }catch (errWatch) {
+      dispatch({ type: "error", payload: errWatch });
+    }
 
     return _observable;
-  }, [client, query, memoVariables, pageSize] );
+  }, [client, memoOptions, pageSize] );
 
   useEffect(() => {
+    if (!observableQuery) {
+      return
+    }
     const s = observableQuery.subscribe(result => {
       dispatch({
         type: "success",
@@ -233,8 +249,8 @@ function usePagination (client, query, variables = {}, pageSize) {
         }
       });
     },
-    err => {
-      dispatch({ type: "error", payload: err });
+    errSubscr => {
+      dispatch({ type: "error", payload: errSubscr });
     } );
     return () => s.unsubscribe();
   }, [observableQuery, fnGetArray, fnGetPageInfo]);
@@ -252,7 +268,7 @@ function usePagination (client, query, variables = {}, pageSize) {
       //   console.log("asyncFunctionInEffect");
       // }  
       try {
-        let prevData = client.readQuery({ query });
+        let prevData = client.readQuery({ query: memoOptions.query });
         const isQueryCached = state.intensionCursorAfter
           ? state.intensionCursorAfter in refCached.current
           : "null" in refCached.current;
@@ -269,9 +285,9 @@ function usePagination (client, query, variables = {}, pageSize) {
         }
   
         let options = {
-          query,
+          ...memoOptions,
           variables: {
-            ...memoVariables,
+            ...memoOptions.variables,
             first: pageSize,
             after: state.intensionCursorAfter
           },
@@ -288,7 +304,7 @@ function usePagination (client, query, variables = {}, pageSize) {
         const currData = result.data;
         fnJoinResults(currData, prevData);
         client.writeQuery({
-          query,
+          query: memoOptions.query,
           data: currData
         });
       } catch (errFetchPage) {
@@ -298,7 +314,7 @@ function usePagination (client, query, variables = {}, pageSize) {
 
     asyncFunctionInEffect();
     // }, [state.intensionCursorAfter, pageSize, variables]);
-  }, [client, query, memoVariables, pageSize, fnGetArray, fnGetPageInfo, fnJoinResults, state.intensionCursorAfter, state.timestamp ] );
+  }, [client, memoOptions, pageSize, fnGetArray, fnGetPageInfo, fnJoinResults, state.intensionCursorAfter, state.timestamp ] );
 
   const goNextPage = () => {
     if (state.loading) {

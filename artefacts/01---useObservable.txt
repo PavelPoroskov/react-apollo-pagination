@@ -1,4 +1,12 @@
+issue:
+old realisation (artefacts/old/usePaginationBefore.js) 
+faster than new realisation src/usePagination.js
+    time for loading first page
+to my perception
+need test
 
+
+done.
 
 useObservable cause render becouse use useState
 I need call cbSuccess( dispatch({type: 'success})) after success 

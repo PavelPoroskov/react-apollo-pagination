@@ -1,55 +1,47 @@
-import {useEffect, useRef} from 'react'
+import {useMemo, useEffect} from 'react'
+import {options2arr} from './utils'
 
 
-const useSubscription = ( client, query, variables={}, fnToCache ) => {
+const useSubscription = ( client, options, fnToCache ) => {
 
-  const refSubsription = useRef( undefined );
+  const memoOptions = useMemo(
+    () => {
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log('useMemo memoRestOptions')
+      // }      
+      const {variables, ...restOptions} = options
+      return {variables: variables || {}, ...restOptions }
+    },
+    // eslint-disable-next-line
+    options2arr(options)
+  );
 
-
-  useEffect( () => {
-
-    async function asyncFunction() {
-      try {
-  
-        let observableMain = client.subscribe({
-          query,
-          variables
-        })
-  
-        refSubsription.current = observableMain.subscribe(
-          resultNext => {
-            // console.log('useEffectSubscription finished')
-            // console.log(resultNext)
-            
-            if (fnToCache) {
-              fnToCache(resultNext.data)
-            }
-          },
-          err => {
-            // console.log('useEffectSubscription error')
-          },
-          () => {
-            // console.log('useEffectSubscription finished')
-          }
-        )
-  
-      }catch (e) {
-        throw e
-        // console.log('useEffectSubscription catch')
-        // console.log(e)
-      }
+  const observableQuery = useMemo(() => {
+    let _observable
+    try {
+      _observable = client.subscribe(memoOptions);
+    }catch (errWatch) {
+      //error
     }
-      // console.log('react-apollo-hooks.js / useEffect')
-    asyncFunction()
+    return _observable;
+  }, [client, memoOptions] );
 
-    return () => {
-      // console.log('watchQuery unsubscribe')
-      if (refSubsription.current) {
-        refSubsription.current.unsubscribe()
-      }
+  useEffect(() => {
+    if (!observableQuery) {
+      return
     }
-  // eslint-disable-next-line 
-  }, Object.keys(variables).map( key => variables[key] ) )
+    const s = observableQuery.subscribe(
+      resultNext => {
+        if (fnToCache) {
+          fnToCache(resultNext.data)
+        }
+      },
+      err => {
+        //dispatch({type:'error', payload : err})
+      },
+    );
+    return () => s.unsubscribe();
+  }, [observableQuery, fnToCache]);
 
 }
 
