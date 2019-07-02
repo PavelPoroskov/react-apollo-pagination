@@ -36,8 +36,5 @@
   },
   "peerDependencies": {
     "react": "latest"
-  },
-  "dependencies": {
-    "react-apollo-pagination": "^1.0.0"
   }
 }
