@@ -1,0 +1,43 @@
+{
+  "name": "react-apollo-pagination",
+  "version": "1.0.1",
+  "description": "React hook for pagination in Apollo-Client",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "babel src --out-dir lib",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PavelPoroskov/react-apollo-pagination.git"
+  },
+  "keywords": [
+    "pagination",
+    "apollo-client",
+    "graphql"
+  ],
+  "author": "Pavel Poroskov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PavelPoroskov/react-apollo-pagination/issues"
+  },
+  "homepage": "https://github.com/PavelPoroskov/react-apollo-pagination#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
+    "react": "^16.8.6"
+  },
+  "peerDependencies": {
+    "react": "latest"
+  },
+  "dependencies": {
+    "react-apollo-pagination": "^1.0.0"
+  }
+}
