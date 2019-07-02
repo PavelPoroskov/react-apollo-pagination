@@ -31,10 +31,9 @@
     "@babel/core": "^7.4.5",
     "@babel/node": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
-    "@babel/preset-react": "^7.0.0",
-    "react": "^16.8.6"
+    "@babel/preset-react": "^7.0.0"
   },
   "peerDependencies": {
-    "react": "latest"
+    "react": "^16.8.6"
   }
 }
