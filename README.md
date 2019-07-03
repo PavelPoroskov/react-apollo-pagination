@@ -9,7 +9,9 @@ Support cursor-based relay pagination.
 ## Demo   
 
 [Demo app](https://codesandbox.io/s/xenodochial-waterfall-68ygx)  
-
+```
+https://codesandbox.io/s/xenodochial-waterfall-68ygx  
+```
 
 ## Requirements
 server use relay cursor specification (<https://facebook.github.io/relay/graphql/connections.htm>)  
