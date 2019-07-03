@@ -7,14 +7,15 @@ Support cursor-based relay pagination.
 
 ## Requirements
 server use relay cursor specification (https://facebook.github.io/relay/graphql/connections.htm)
-  query must contain:  
-    $first, $after,  
-    @connection(key: "uniqname3"),  
-    edges.node,  
-    pageInfo  
+    query must contain:  
+        $first, $after,  
+        @connection(key: "uniqname3"),  
+        edges.node,  
+        pageInfo  
 
 ## Usage  
 
+### Install
 ```
 npm install react-apollo-pagination
 ```
@@ -24,7 +25,7 @@ yarn add react-apollo-pagination
 ```
 
 
-```
+```javascript
 import React from "react";
 import ApolloClientBoost, { gql } from "apollo-boost";
 import { ApolloProvider, withApollo } from "react-apollo";
@@ -116,5 +117,7 @@ function App() {
 export default App;
 ```
 
-## Usage  
+## Roadmap  
+* add offset-based pagination  
+* add cursor-based pagination not-relay  
  
