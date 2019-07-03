@@ -341,6 +341,12 @@ function usePagination (client, options, pageSize) {
     if (state.loading) {
       return;
     }
+    if (!_pageNum) {
+      return;
+    }
+    if (!( 0 < _pageNum && _pageNum <= state.arPageNums.length)) {
+      return;
+    }
 
     dispatch({ type: "setPage", payload: _pageNum });
   };
