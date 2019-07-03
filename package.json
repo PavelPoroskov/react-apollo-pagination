@@ -9,6 +9,10 @@
   "scripts": {
     "build": "babel src --out-dir lib",
     "prepare": "npm run build",
+    "prepublish": "npm run build",
+    "postpublish": "git push origin --all; git push origin --tags",
+    "postversion": "npm publish",
+    "preversion0": "npm test",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
