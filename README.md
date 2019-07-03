@@ -8,7 +8,7 @@ Support cursor-based relay pagination.
 
 ## Demo   
 
-Demo app <https://codesandbox.io/s/xenodochial-waterfall-68ygx>  
+[Demo app](https://codesandbox.io/s/xenodochial-waterfall-68ygx)  
 
 
 ## Requirements
