@@ -7,10 +7,12 @@ A react hook for pagination in apollo-client.
 Support cursor-based relay pagination.  
 
 ## Demo   
-<https://codesandbox.io/s/xenodochial-waterfall-68ygx>  
+
+Demo app <https://codesandbox.io/s/xenodochial-waterfall-68ygx>  
+
 
 ## Requirements
-server use relay cursor specification <https://facebook.github.io/relay/graphql/connections.htm>  
+server use relay cursor specification (<https://facebook.github.io/relay/graphql/connections.htm>)  
 query must contain:  
 * $first, $after,  
 * @connection(key: "uniqname3"),  
