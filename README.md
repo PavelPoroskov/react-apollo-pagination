@@ -1,3 +1,4 @@
+![npm](https://img.shields.io/npm/v/react-apollo-pagination.svg)  
 
 # react-apollo-pagination  
 
