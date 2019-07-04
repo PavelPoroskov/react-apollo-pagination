@@ -38,9 +38,9 @@ function reducer(state, action) {
       // todo:
       //   get cursor of last item on the page
 
-      if (process.env.NODE_ENV==='development') {
-        console.log(`reducer setPageNext ${intentionPageNum}`);
-      }  
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log(`reducer setPageNext ${intentionPageNum}`);
+      // }  
     
       // if (intentionPageNum <= state.arPageNums.length) {
 
@@ -77,9 +77,9 @@ function reducer(state, action) {
       const intentionPageNum = state.pageNum - 1;
       const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
 
-      if (process.env.NODE_ENV==='development') {
-        console.log(`reducer setPagePrev ${intentionPageNum}`);
-      }  
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log(`reducer setPagePrev ${intentionPageNum}`);
+      // }  
 
       return {
         ...state,
@@ -109,9 +109,9 @@ function reducer(state, action) {
     case "setPage": {
       const intentionPageNum = action.payload;
       const intensionCursorAfter = state.arCursorAfter[intentionPageNum - 1];
-      if (process.env.NODE_ENV==='development') {
-        console.log(`reducer setPagePrev ${intentionPageNum}`);
-      }  
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log(`reducer setPagePrev ${intentionPageNum}`);
+      // }  
 
       return {
         ...state,
@@ -173,9 +173,9 @@ function reducer(state, action) {
         lastPageNum
       };
     case "error":
-      if (process.env.NODE_ENV==='development') {
-        console.log("reducer: error");
-      }  
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log("reducer: error");
+      // }  
 
       return {
         ...state,
@@ -202,9 +202,9 @@ function usePagination (client, options, pageSize) {
 
   const memoOptions = useMemo(
     () => {
-      if (process.env.NODE_ENV==='development') {
-        console.log('useMemo memoRestOptions')
-      }      
+      // if (process.env.NODE_ENV==='development') {
+      //   console.log('useMemo memoRestOptions')
+      // }      
       const {variables, ...restOptions} = options
       return {variables: variables || {}, ...restOptions }
     },
