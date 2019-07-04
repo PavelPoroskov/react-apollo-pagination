@@ -1,6 +1,6 @@
 {
   "name": "react-apollo-pagination",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "React hook for pagination in Apollo-Client",
   "main": "lib/index.js",
   "directories": {
