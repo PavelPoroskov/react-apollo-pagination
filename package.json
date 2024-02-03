@@ -30,14 +30,13 @@
     "url": "https://github.com/PavelPoroskov/react-apollo-pagination/issues"
   },
   "homepage": "https://github.com/PavelPoroskov/react-apollo-pagination#readme",
-  "devDependencies": {
-    "@babel/cli": "^7.5.0",
-    "@babel/core": "^7.5.4",
-    "@babel/node": "^7.5.0",
-    "@babel/preset-env": "^7.5.4",
-    "@babel/preset-react": "^7.0.0"
-  },
   "peerDependencies": {
-    "react": "^16.8.6"
+    "react": ">=16.8.6"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-react": "^7.23.3"
   }
 }

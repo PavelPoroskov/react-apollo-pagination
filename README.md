@@ -10,7 +10,6 @@ Support cursor-based relay pagination.
 ```
 https://codesandbox.io/s/xenodochial-waterfall-68ygx  
 ```
-[Copy of prev link](https://codesandbox.io/s/xenodochial-waterfall-68ygx)  
 
 ## Requirements
 server use relay cursor specification (<https://facebook.github.io/relay/graphql/connections.htm>)  
@@ -25,10 +24,6 @@ query must contain:
 ### Install
 ```
 npm install react-apollo-pagination
-```
-or  
-```
-yarn add react-apollo-pagination
 ```
 
 
