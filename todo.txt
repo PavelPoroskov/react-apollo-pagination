@@ -1,0 +1,18 @@
+example api https://graphql-compose.herokuapp.com/userForRelay from readme.md is not available
+  find other compatible with relay pagination specification
+
+example: use @apollo/client(useApolloClient()) instead of react-apollo(withApollo())
+
+demo https://codesandbox.io/s/xenodochial-waterfall-68ygx 
+  does not work
+
+read pagination
+  https://www.apollographql.com/docs/react/pagination/core-api
+      { fetchMore } = useQuery()
+  https://relay.dev/docs/tutorial/connections-pagination/
+    usePaginationFragment()
+    https://relay.dev/docs/api-reference/use-pagination-fragment/
+  https://relay.dev/docs/guided-tour/list-data/advanced-pagination/
+
+delete useQuery, apollo/client has it
+delete useSubscription, apollo/client has it
